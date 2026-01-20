@@ -19,9 +19,9 @@ function App() {
   const [gapaNumber, setGapaNumber] = useState('');
   const [meanCoordinates, setMeanCoordinates] = useState(null);
   const [jobCode, setJobCode] = useState('');
-  const [editableJobCode, setEditableJobCode] = useState('');
   const [isGenerated, setIsGenerated] = useState(false);
   const [activeView, setActiveView] = useState('input');
+  const [editableGA, setEditableGA] = useState('');
 
   const pdfContentRef = useRef(null);
   const leftBarcodeRef = useRef(null);
@@ -44,7 +44,7 @@ function App() {
       const mean = calculateMeanCoordinates(polygonPoints);
       console.log('Calculated mean:', mean);
       setMeanCoordinates(mean);
-      setEditableJobCode(mean.ga); // Initialize editable job code with calculated value
+      setEditableGA(mean.ga);
       setIsGenerated(false);
     } else {
       console.warn('Calculate Mean attempted but no polygon points.');
@@ -70,15 +70,15 @@ function App() {
 
   useEffect(() => {
     // Ensure barcode is rendered whenever preview is active (SVG may remount when switching views)
-    if (isGenerated && editableJobCode && activeView === 'preview' && leftBarcodeRef.current) {
-      JsBarcode(leftBarcodeRef.current, editableJobCode, {
+    if (isGenerated && editableGA && activeView === 'preview' && leftBarcodeRef.current) {
+      JsBarcode(leftBarcodeRef.current, editableGA, {
         format: 'CODE128',
         width: 2,
         height: 80,
         displayValue: false,
       });
     }
-  }, [isGenerated, editableJobCode, activeView]);
+  }, [isGenerated, editableGA, activeView]);
 
   const handleExportPDF = async () => {
     if (!isGenerated) {
@@ -103,7 +103,7 @@ function App() {
     setGapaNumber('');
     setMeanCoordinates(null);
     setJobCode('');
-    setEditableJobCode('');
+    setEditableGA('');
     setIsGenerated(false);
     setActiveView('input');
   };
@@ -133,7 +133,7 @@ function App() {
               <div className="info-box">
                 <p><strong>E:</strong> <span className="info-value">{meanCoordinates.easting.toFixed(6)}</span></p>
                 <p><strong>N:</strong> <span className="info-value">{meanCoordinates.northing.toFixed(6)}</span></p>
-                <p><strong>GA:</strong> <span className="info-value">{editableJobCode || meanCoordinates.ga}</span></p>
+                <p><strong>GA:</strong> <span className="info-value">{editableGA}</span></p>
               </div>
             </div>
           )}
@@ -204,12 +204,7 @@ function App() {
                     </div>
                     <div className="mean-item full-width">
                       <label>Job Code (Mean):</label>
-                      <input 
-                        type="text" 
-                        value={editableJobCode} 
-                        onChange={(e) => setEditableJobCode(e.target.value)}
-                        placeholder="Auto-calculated GA value"
-                      />
+                      <input type="text" value={editableGA} onChange={(e) => setEditableGA(e.target.value)} />
                     </div>
                   </div>
                 </div>
@@ -249,12 +244,12 @@ function App() {
                   </div>
 
                   {/** GA text under the barcode */}
-                  <div className="ga-left">{editableJobCode || (meanCoordinates ? meanCoordinates.ga : '')}</div>
+                  <div className="ga-left">{editableGA}</div>
                 </div>
 
                 {/** Right QR on top-right */}
                 <div className="a4-right-group">
-                  <div className="qr-right">
+                  <div className="qr-left qr-right">
                     <QRCodeSVG value={gapaNumber} size={130} level="H" />
                   </div>
                 </div>
@@ -292,7 +287,7 @@ function App() {
                   <tbody>
                     <tr><td><strong>Mean Easting (E):</strong></td><td>{meanCoordinates.easting.toFixed(6)}</td></tr>
                     <tr><td><strong>Mean Northing (N):</strong></td><td>{meanCoordinates.northing.toFixed(6)}</td></tr>
-                    <tr><td><strong>GA (E - N):</strong></td><td>{editableJobCode || meanCoordinates.ga}</td></tr>
+                    <tr><td><strong>GA (E - N):</strong></td><td>{editableGA}</td></tr>
                   </tbody>
                 </table>
               </div>
