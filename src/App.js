@@ -163,7 +163,7 @@ function App() {
                   onChange={(e) => setCoordinateInput(e.target.value)}
                   onBlur={handleParseCoordinates}
                   onPaste={(e) => { setTimeout(handleParseCoordinates, 50); }}
-                  placeholder="Paste coordinates (E N per line)&#10;123456.789 234567.890&#10;123567.890 234678.901"
+                  placeholder="WKT Format: POLYGON((E1 N1, E2 N2, E3 N3, E1 N1))&#10;Or line format:&#10;123456.789 234567.890&#10;123567.890 234678.901"
                   rows="10"
                 />
                 <button onClick={handleParseCoordinates} className="btn-secondary">Parse Coordinates</button>

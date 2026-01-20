@@ -56,7 +56,9 @@ export function generateJobCode(gapaNumber) {
 
 /**
  * Parse pasted coordinate text into structured array
- * Expected format: "E1 N1\nE2 N2\n..." or "E1, N1\nE2, N2\n..."
+ * Supports two formats:
+ * 1. WKT POLYGON format: "POLYGON((E1 N1, E2 N2, E3 N3, ..., En Nn, E1 N1))"
+ * 2. Line-by-line format: "E1 N1\nE2 N2\n..." or "E1, N1\nE2, N2\n..."
  * E = Eastings, N = Northings
  * @param {string} text - Raw pasted text
  * @returns {Array<{easting: number, northing: number}>} - Parsed coordinates
@@ -66,7 +68,41 @@ export function parseCoordinateText(text) {
     return [];
   }
 
-  const lines = text.trim().split('\n');
+  const trimmedText = text.trim();
+
+  // Check if input is WKT POLYGON format
+  const polygonMatch = trimmedText.match(/POLYGON\s*\(\s*\((.*?)\)\s*\)/i);
+  
+  if (polygonMatch) {
+    // Parse WKT POLYGON format
+    const coordString = polygonMatch[1];
+    const coordinates = [];
+    
+    // Split by comma to get individual coordinate pairs
+    const pairs = coordString.split(',');
+    
+    for (const pair of pairs) {
+      const trimmedPair = pair.trim();
+      if (!trimmedPair) continue;
+      
+      // Split by whitespace to get E and N
+      const parts = trimmedPair.split(/\s+/);
+      
+      if (parts.length >= 2) {
+        const easting = parseFloat(parts[0]);
+        const northing = parseFloat(parts[1]);
+        
+        if (!isNaN(easting) && !isNaN(northing)) {
+          coordinates.push({ easting, northing });
+        }
+      }
+    }
+    
+    return coordinates;
+  }
+
+  // Fall back to line-by-line format
+  const lines = trimmedText.split('\n');
   const coordinates = [];
 
   for (const line of lines) {
