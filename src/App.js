@@ -3,7 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import JsBarcode from 'jsbarcode';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { FaEdit, FaEye, FaChartBar, FaDownload } from 'react-icons/fa';
+import { FaEdit, FaEye, FaChartBar, FaDownload, FaHistory, FaTrash } from 'react-icons/fa';
 import {
   calculateMeanCoordinates,
   generateJobCode,
@@ -11,6 +11,7 @@ import {
   formatPolygonCoordinates,
   formatPolygonForDisplay,
 } from './calculations';
+import { saveGeneration, getAllGenerations, deleteGeneration, initDB } from './indexedDB';
 import './App.css';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
     const saved = localStorage.getItem('lcGenerationCount');
     return saved ? parseInt(saved, 10) : 0;
   });
+  const [savedGenerations, setSavedGenerations] = useState([]);
 
   const pdfContentRef = useRef(null);
   const leftBarcodeRef = useRef(null);
@@ -73,6 +75,16 @@ function App() {
   };
 
   useEffect(() => {
+    // Initialize IndexedDB and load saved generations
+    const loadGenerations = async () => {
+      await initDB();
+      const generations = await getAllGenerations();
+      setSavedGenerations(generations);
+    };
+    loadGenerations();
+  }, []);
+
+  useEffect(() => {
     // Ensure barcode is rendered whenever preview is active (SVG may remount when switching views)
     if (isGenerated && editableGA && activeView === 'preview' && leftBarcodeRef.current) {
       JsBarcode(leftBarcodeRef.current, editableGA, {
@@ -95,9 +107,47 @@ function App() {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
-      pdf.save(`lands-commission-${gapaNumber}-${Date.now()}.pdf`);
+      
+      // Save to downloads
+      pdf.save(`polygon-workspace-${gapaNumber}-${Date.now()}.pdf`);
+      
+      // Save to IndexedDB
+      const pdfBlob = pdf.output('blob');
+      await saveGeneration({
+        gapaNumber,
+        jobCode,
+        meanCoordinates,
+        polygonPoints,
+        editableGA,
+        pdfBlob,
+      });
+      
+      // Refresh saved generations list
+      const generations = await getAllGenerations();
+      setSavedGenerations(generations);
     } catch (error) {
       console.error('Error generating PDF', error);
+    }
+  };
+
+  const handleDownloadSavedPDF = (record) => {
+    if (record.pdfBlob) {
+      const url = URL.createObjectURL(record.pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `polygon-workspace-${record.gapaNumber}-${record.timestamp}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleDeleteRecord = async (id) => {
+    try {
+      await deleteGeneration(id);
+      const generations = await getAllGenerations();
+      setSavedGenerations(generations);
+    } catch (error) {
+      console.error('Error deleting record', error);
     }
   };
 
@@ -125,6 +175,9 @@ function App() {
           </button>
           <button className={`nav-item ${activeView === 'preview' ? 'active' : ''}`} onClick={() => setActiveView('preview')} disabled={!isGenerated}>
             <FaEye className="nav-icon" /> Preview
+          </button>
+          <button className={`nav-item ${activeView === 'history' ? 'active' : ''}`} onClick={() => setActiveView('history')}>
+            <FaHistory className="nav-icon" /> History
           </button>
           <button className={`nav-item ${activeView === 'stats' ? 'active' : ''}`} onClick={() => setActiveView('stats')}>
             <FaChartBar className="nav-icon" /> Statistics
@@ -251,6 +304,53 @@ function App() {
           </div>
         )}
 
+        {activeView === 'history' && (
+          <div className="content-section">
+            <div className="stats-container">
+              <h2 className="stats-heading">Generation History</h2>
+              {savedGenerations.length === 0 ? (
+                <div className="empty-state">
+                  <FaHistory style={{ fontSize: '3rem', color: '#ccc', marginBottom: '1rem' }} />
+                  <p>No saved generations yet.</p>
+                  <p style={{ fontSize: '0.9rem', color: '#666' }}>Generate and export PDFs to see them here.</p>
+                </div>
+              ) : (
+                <div className="history-list">
+                  {savedGenerations.slice().reverse().map((record) => (
+                    <div key={record.id} className="history-item">
+                      <div className="history-info">
+                        <h3>GAPA: {record.gapaNumber}</h3>
+                        <p><strong>Job Code:</strong> {record.jobCode}</p>
+                        <p><strong>GA:</strong> {record.editableGA}</p>
+                        <p><strong>Date:</strong> {new Date(record.timestamp).toLocaleString()}</p>
+                        <p><strong>Points:</strong> {record.polygonPoints?.length || 0}</p>
+                      </div>
+                      <div className="history-actions">
+                        {record.pdfBlob && (
+                          <button 
+                            onClick={() => handleDownloadSavedPDF(record)} 
+                            className="btn-primary"
+                            title="Download PDF"
+                          >
+                            <FaDownload /> Download PDF
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => handleDeleteRecord(record.id)} 
+                          className="btn-secondary"
+                          title="Delete Record"
+                        >
+                          <FaTrash /> Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeView === 'stats' && (
           <div className="content-section">
             <div className="stats-container">
@@ -271,6 +371,10 @@ function App() {
                 <div className="stat-card">
                   <h3>Codes Generated</h3>
                   <p className="stat-value">{generationCount}</p>
+                </div>
+                <div className="stat-card">
+                  <h3>Saved Records</h3>
+                  <p className="stat-value">{savedGenerations.length}</p>
                 </div>
               </div>
               {meanCoordinates && (
