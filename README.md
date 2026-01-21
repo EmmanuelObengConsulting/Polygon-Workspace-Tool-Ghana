@@ -1,6 +1,6 @@
-# Lands Commission - Polygon Workspace Tool
+# Polygon Workspace Tool Ghana
 
-Offline land polygon coordinate processing tool for the Lands Commission of Ghana.
+Offline land polygon coordinate processing tool for Ghana.
 
 ## Features
 
@@ -67,4 +67,4 @@ The `build` folder will contain the production-ready files that can be hosted on
 
 ## License
 
-For internal use at Lands Commission, Ghana only.
+For internal use in Ghana only.

@@ -117,7 +117,7 @@ function App() {
       <aside className="sidebar">
         <div className="sidebar-header">
           <h2>LC Workspace</h2>
-          <p>Land Commission</p>
+          <p>Polygon Workspace Tool Ghana</p>
         </div>
         <nav className="sidebar-nav">
           <button className={`nav-item ${activeView === 'input' ? 'active' : ''}`} onClick={() => setActiveView('input')}>
@@ -156,7 +156,7 @@ function App() {
 
       <main className="main-content">
         <header className="app-header">
-          <h1>Lands Commission - Polygon Workspace Tool</h1>
+          <h1>Polygon Workspace Tool Ghana</h1>
           <p>Land Polygon Coordinate Processor Both Bar Codes and QR Codes</p>
         </header>
 
