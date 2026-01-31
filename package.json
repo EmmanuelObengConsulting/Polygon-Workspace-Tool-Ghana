@@ -2,7 +2,7 @@
   "name": "lands-commission-workspace",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://daniel-eng06.github.io/Land-Commission-Ghana",
+  "homepage": "https://emmanuelobengconsulting.github.io/Polygon-Workspace-Tool-Ghana",
   "dependencies": {
     "html2canvas": "^1.4.1",
     "jsbarcode": "^3.11.5",
