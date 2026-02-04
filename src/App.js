@@ -28,6 +28,9 @@ function App() {
     return saved ? parseInt(saved, 10) : 0;
   });
   const [savedGenerations, setSavedGenerations] = useState([]);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [saveFileName, setSaveFileName] = useState('');
+  const [saveFileType, setSaveFileType] = useState('pdf');
 
   const pdfContentRef = useRef(null);
   const leftBarcodeRef = useRef(null);
@@ -101,32 +104,104 @@ function App() {
       console.warn('Export attempted before generation.');
       return;
     }
+    // Set default filename and show modal
+    const defaultName = `polygon-workspace-${gapaNumber}-${Date.now()}`;
+    setSaveFileName(defaultName);
+    setSaveFileType('pdf');
+    setShowSaveModal(true);
+  };
+
+  const handleConfirmSave = async () => {
+    if (!saveFileName.trim()) {
+      alert('Please enter a filename');
+      return;
+    }
+    
     try {
       const element = pdfContentRef.current;
-      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+      // Increased scale to 4 for crispy clean PDF quality
+      const canvas = await html2canvas(element, { scale: 4, useCORS: true, logging: false });
+      const imgData = canvas.toDataURL('image/png', 1.0); // Use max quality
       
-      // Save to downloads
-      pdf.save(`polygon-workspace-${gapaNumber}-${Date.now()}.pdf`);
-      
-      // Save to IndexedDB
-      const pdfBlob = pdf.output('blob');
-      await saveGeneration({
-        gapaNumber,
-        jobCode,
-        meanCoordinates,
-        polygonPoints,
-        editableGA,
-        pdfBlob,
-      });
+      if (saveFileType === 'pdf') {
+        // Export as PDF with compression disabled for clarity
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        pdf.addImage(imgData, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+        pdf.save(`${saveFileName}.pdf`);
+        
+        // Save to IndexedDB
+        const pdfBlob = pdf.output('blob');
+        await saveGeneration({
+          gapaNumber,
+          jobCode,
+          meanCoordinates,
+          polygonPoints,
+          editableGA,
+          pdfBlob,
+        });
+      } else if (saveFileType === 'doc') {
+        // Export as DOC (HTML format that Word can open)
+        const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${saveFileName}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20mm; }
+    .content { width: 170mm; margin: 0 auto; }
+    img { max-width: 100%; height: auto; }
+    h1 { color: #2c5f2d; }
+    .info { margin: 20px 0; }
+    .info p { margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <h1>Polygon Workspace Tool Ghana</h1>
+    <div class="info">
+      <p><strong>GAPA Number:</strong> ${gapaNumber}</p>
+      <p><strong>Job Code:</strong> ${jobCode}</p>
+      <p><strong>GA:</strong> ${editableGA}</p>
+      <p><strong>Mean Easting:</strong> ${meanCoordinates.easting.toFixed(6)}</p>
+      <p><strong>Mean Northing:</strong> ${meanCoordinates.northing.toFixed(6)}</p>
+      <p><strong>Total Points:</strong> ${polygonPoints.length}</p>
+    </div>
+    <div>
+      <img src="${imgData}" alt="Polygon Workspace Preview" />
+    </div>
+  </div>
+</body>
+</html>`;
+        
+        const blob = new Blob([htmlContent], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${saveFileName}.doc`;
+        link.click();
+        URL.revokeObjectURL(url);
+        
+        // Save to IndexedDB (as blob)
+        await saveGeneration({
+          gapaNumber,
+          jobCode,
+          meanCoordinates,
+          polygonPoints,
+          editableGA,
+          pdfBlob: blob,
+        });
+      }
       
       // Refresh saved generations list
       const generations = await getAllGenerations();
       setSavedGenerations(generations);
+      
+      // Close modal
+      setShowSaveModal(false);
     } catch (error) {
-      console.error('Error generating PDF', error);
+      console.error('Error generating file', error);
+      alert('Error generating file. Please try again.');
     }
   };
 
@@ -164,6 +239,44 @@ function App() {
 
   return (
     <div className="app">
+      {showSaveModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Save Document</h2>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>File Name</label>
+                <input
+                  type="text"
+                  value={saveFileName}
+                  onChange={(e) => setSaveFileName(e.target.value)}
+                  placeholder="Enter file name"
+                  autoFocus
+                />
+              </div>
+              <div className="form-group">
+                <label>File Type</label>
+                <select
+                  value={saveFileType}
+                  onChange={(e) => setSaveFileType(e.target.value)}
+                >
+                  <option value="pdf">PDF Document (.pdf)</option>
+                  <option value="doc">Word Document (.doc)</option>
+                </select>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button onClick={() => setShowSaveModal(false)} className="btn-secondary">
+                Cancel
+              </button>
+              <button onClick={handleConfirmSave} className="btn-primary">
+                <FaDownload className="btn-icon" /> Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <aside className="sidebar">
         <div className="sidebar-header">
           <h2>LC Workspace</h2>
@@ -276,7 +389,7 @@ function App() {
                   {/** Left QR on top-left */}
                   <div className="qr-left">
                     {polygonPoints && polygonPoints.length > 0 && (
-                      <QRCodeSVG value={formatPolygonCoordinates(polygonPoints)} size={130} level="H" />
+                      <QRCodeSVG value={formatPolygonCoordinates(polygonPoints)} size={110} level="M" />
                     )}
                   </div>
 
@@ -292,7 +405,7 @@ function App() {
                 {/** Right QR on top-right */}
                 <div className="a4-right-group">
                   <div className="qr-left qr-right">
-                    <QRCodeSVG value={gapaNumber} size={130} level="H" />
+                    <QRCodeSVG value={gapaNumber} size={110} level="M" />
                   </div>
                 </div>
 
