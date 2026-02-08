@@ -112,8 +112,20 @@ function App() {
       return;
     }
     
+    // Switch to preview view if not already there, then wait for render
+    if (activeView !== 'preview') {
+      setActiveView('preview');
+      // Wait for the preview to render
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
     try {
       const element = pdfContentRef.current;
+      if (!element) {
+        console.error('Preview content not found');
+        return;
+      }
+      
       // Capture the preview with high quality
       const canvas = await html2canvas(element, { 
         scale: 3, 
