@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/Land-Commission-Ghana/static/css/main.3636ae4e.css",
-    "main.js": "/Land-Commission-Ghana/static/js/main.22ca7571.js",
-    "static/js/213.5e1e5567.chunk.js": "/Land-Commission-Ghana/static/js/213.5e1e5567.chunk.js",
-    "static/js/732.86557898.chunk.js": "/Land-Commission-Ghana/static/js/732.86557898.chunk.js",
-    "index.html": "/Land-Commission-Ghana/index.html",
-    "main.3636ae4e.css.map": "/Land-Commission-Ghana/static/css/main.3636ae4e.css.map",
-    "main.22ca7571.js.map": "/Land-Commission-Ghana/static/js/main.22ca7571.js.map",
-    "213.5e1e5567.chunk.js.map": "/Land-Commission-Ghana/static/js/213.5e1e5567.chunk.js.map",
-    "732.86557898.chunk.js.map": "/Land-Commission-Ghana/static/js/732.86557898.chunk.js.map"
+    "main.css": "/Polygon-Workspace-Tool-Ghana/static/css/main.9510d590.css",
+    "main.js": "/Polygon-Workspace-Tool-Ghana/static/js/main.d777d713.js",
+    "static/js/213.5e1e5567.chunk.js": "/Polygon-Workspace-Tool-Ghana/static/js/213.5e1e5567.chunk.js",
+    "static/js/732.86557898.chunk.js": "/Polygon-Workspace-Tool-Ghana/static/js/732.86557898.chunk.js",
+    "index.html": "/Polygon-Workspace-Tool-Ghana/index.html",
+    "main.9510d590.css.map": "/Polygon-Workspace-Tool-Ghana/static/css/main.9510d590.css.map",
+    "main.d777d713.js.map": "/Polygon-Workspace-Tool-Ghana/static/js/main.d777d713.js.map",
+    "213.5e1e5567.chunk.js.map": "/Polygon-Workspace-Tool-Ghana/static/js/213.5e1e5567.chunk.js.map",
+    "732.86557898.chunk.js.map": "/Polygon-Workspace-Tool-Ghana/static/js/732.86557898.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.3636ae4e.css",
-    "static/js/main.22ca7571.js"
+    "static/css/main.9510d590.css",
+    "static/js/main.d777d713.js"
   ]
 }

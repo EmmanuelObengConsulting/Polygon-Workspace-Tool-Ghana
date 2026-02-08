@@ -434,9 +434,35 @@ button {
   justify-content: space-between;
 }
 
+.preview-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 .preview-title {
   margin: 0;
   color: #1a5490;
+}
+
+.btn-print {
+  padding: 0.5rem 0.85rem;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #1a5490 0%, #134070 100%);
+  color: white;
+  border: none;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  height: 40px;
+  box-shadow: 0 4px 10px rgba(26, 84, 144, 0.18);
+}
+
+.btn-print:hover {
+  filter: brightness(1.1);
 }
 
 .btn-download-green {
@@ -804,27 +830,164 @@ button {
 }
 
 @media print {
-  .sidebar,
-  .app-header,
-  .btn-export,
-  .preview-note {
+  /* Force single page and hide everything */
+  html, body {
+    height: 297mm !important;
+    width: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: white !important;
+  }
+
+  /* Hide all elements by default */
+  body * {
+    visibility: hidden !important;
     display: none !important;
   }
 
-  .main-content {
-    padding: 0;
+  /* Show only the A4 preview container and its content */
+  .a4-preview,
+  .a4-left-group,
+  .a4-right-group,
+  .qr-left,
+  .qr-right,
+  .barcode-small,
+  .ga-left,
+  .a4-left-group *,
+  .a4-right-group * {
+    visibility: visible !important;
+    display: block !important;
   }
 
+  /* Force the app structure to be minimal */
+  .app,
+  .main-content,
+  .content-section,
+  .preview-view,
   .preview-container {
-    background: white;
-    padding: 0;
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   .a4-preview {
-    box-shadow: none;
+    display: block !important;
+    visibility: visible !important;
+    position: relative !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Left group with QR code, barcode, and GA text */
+  .a4-left-group {
+    display: flex !important;
+    position: absolute !important;
+    left: 30mm !important;
+    top: 25mm !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  /* QR codes */
+  .qr-left,
+  .qr-right {
+    display: flex !important;
+    width: 110px !important;
+    height: 110px !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .qr-left svg,
+  .qr-right svg {
+    display: block !important;
+    width: 110px !important;
+    height: 110px !important;
+    filter: contrast(1.5) !important;
+    image-rendering: crisp-edges !important;
+    shape-rendering: crispEdges !important;
+    background-color: white !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /* Barcode */
+  .barcode-small {
+    display: flex !important;
+    width: 230px !important;
+    margin: 0 !important;
+    justify-content: center !important;
+  }
+
+  .barcode-small svg {
+    display: block !important;
+    width: 100% !important;
+    height: 50px !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /* GA text */
+  .ga-left {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-weight: 800 !important;
+    font-size: 11px !important;
+    width: 230px !important;
+    text-align: center !important;
+    font-family: 'Courier New', monospace !important;
+    letter-spacing: 0.5px !important;
+    color: black !important;
+  }
+
+  /* Right QR code group */
+  .a4-right-group {
+    display: flex !important;
+    position: absolute !important;
+    right: 30mm !important;
+    top: 25mm !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  /* QR code styling for print */
+  .qr-left svg rect[fill="black"],
+  .qr-right svg rect[fill="black"],
+  .qr-left svg path[fill="black"],
+  .qr-right svg path[fill="black"] {
+    fill: black !important;
+    stroke: black !important;
+    stroke-width: 1px !important;
+  }
+
+  .qr-left svg rect[fill="white"],
+  .qr-right svg rect[fill="white"],
+  .qr-left svg path[fill="white"],
+  .qr-right svg path[fill="white"] {
+    fill: #ffffff !important;
+    stroke: none !important;
+  }
+
+  /* Page settings */
+  @page {
+    size: A4 portrait;
     margin: 0;
-    width: 210mm;
-    height: 297mm;
   }
 }
 /* Modal Styles */

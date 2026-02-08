@@ -65,6 +65,13 @@ function App() {
       console.warn('Generate failed: mean coordinates not calculated');
       return;
     }
+    
+    // Debug: Check what will be encoded in QR codes
+    const polygonData = formatPolygonCoordinates(polygonPoints);
+    console.log('QR Code Data - Polygon:', polygonData);
+    console.log('QR Code Data - GAPA:', gapaNumber.trim());
+    console.log('Barcode Data - GA:', editableGA);
+    
     const newJobCode = generateJobCode(gapaNumber);
     console.log('Generated jobCode:', newJobCode);
     setJobCode(newJobCode);
@@ -104,11 +111,49 @@ function App() {
       console.warn('Export attempted before generation.');
       return;
     }
-    // Set default filename and show modal
-    const defaultName = `polygon-workspace-${gapaNumber}-${Date.now()}`;
-    setSaveFileName(defaultName);
-    setSaveFileType('pdf');
-    setShowSaveModal(true);
+    
+    try {
+      const element = pdfContentRef.current;
+      // Capture the preview with high quality
+      const canvas = await html2canvas(element, { 
+        scale: 3, 
+        useCORS: true, 
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      
+      // Create PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      pdf.addImage(imgData, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+      
+      // Create blob and open in new window for preview/download
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      
+      // Open PDF in new window - user can preview and save from there
+      window.open(pdfUrl, '_blank');
+      
+      // Save to IndexedDB
+      await saveGeneration({
+        gapaNumber,
+        jobCode,
+        meanCoordinates,
+        polygonPoints,
+        editableGA,
+        pdfBlob,
+      });
+      
+      // Refresh saved generations list
+      const generations = await getAllGenerations();
+      setSavedGenerations(generations);
+      
+      // Clean up the URL after a delay
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
+    } catch (error) {
+      console.error('Error generating PDF', error);
+      alert('Error generating PDF. Please try again.');
+    }
   };
 
   const handleConfirmSave = async () => {
@@ -388,8 +433,14 @@ function App() {
                 <div className="a4-left-group">
                   {/** Left QR on top-left */}
                   <div className="qr-left">
-                    {polygonPoints && polygonPoints.length > 0 && (
-                      <QRCodeSVG value={formatPolygonCoordinates(polygonPoints)} size={110} level="M" />
+                    {polygonPoints && polygonPoints.length > 0 ? (
+                      <QRCodeSVG 
+                        value={formatPolygonCoordinates(polygonPoints) || 'No data'} 
+                        size={110} 
+                        level="M" 
+                      />
+                    ) : (
+                      <div style={{width: 110, height: 110, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>No Data</div>
                     )}
                   </div>
 
@@ -405,7 +456,15 @@ function App() {
                 {/** Right QR on top-right */}
                 <div className="a4-right-group">
                   <div className="qr-left qr-right">
-                    <QRCodeSVG value={gapaNumber} size={110} level="M" />
+                    {gapaNumber && gapaNumber.trim() ? (
+                      <QRCodeSVG 
+                        value={gapaNumber.trim()} 
+                        size={110} 
+                        level="M" 
+                      />
+                    ) : (
+                      <div style={{width: 110, height: 110, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>No GAPA</div>
+                    )}
                   </div>
                 </div>
 

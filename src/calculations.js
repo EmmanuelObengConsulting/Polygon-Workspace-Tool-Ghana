@@ -133,6 +133,16 @@ export function parseCoordinateText(text) {
 }
 
 /**
+ * Helper function to format number without trailing zeros
+ * @param {number} num - Number to format
+ * @returns {string} - Formatted number string
+ */
+function formatNumberWithoutTrailingZeros(num) {
+  // Convert to string with up to 6 decimal places, then remove trailing zeros
+  return parseFloat(num.toFixed(6)).toString();
+}
+
+/**
  * Format polygon coordinates for display and QR code
  * Format: POLYGON((E1 N1, E2 N2, E3 N3, ..., En Nn, E1 N1))
  * @param {Array<{easting: number, northing: number}>} points - Coordinate points
@@ -143,12 +153,23 @@ export function formatPolygonCoordinates(points) {
     return 'No coordinates';
   }
 
-  const coordPairs = points.map(p => `${p.easting.toFixed(6)} ${p.northing.toFixed(6)}`);
+  // Format coordinates without trailing zeros
+  const coordPairs = points.map(p => 
+    `${formatNumberWithoutTrailingZeros(p.easting)} ${formatNumberWithoutTrailingZeros(p.northing)}`
+  );
   
-  // Close the polygon by adding first point at the end
-  if (points.length > 0) {
-    const firstPoint = points[0];
-    coordPairs.push(`${firstPoint.easting.toFixed(6)} ${firstPoint.northing.toFixed(6)}`);
+  // Check if polygon is already closed (last point equals first point)
+  const firstPoint = points[0];
+  const lastPoint = points[points.length - 1];
+  const isAlreadyClosed = 
+    firstPoint.easting === lastPoint.easting && 
+    firstPoint.northing === lastPoint.northing;
+  
+  // Close the polygon by adding first point at the end only if not already closed
+  if (points.length > 0 && !isAlreadyClosed) {
+    coordPairs.push(
+      `${formatNumberWithoutTrailingZeros(firstPoint.easting)} ${formatNumberWithoutTrailingZeros(firstPoint.northing)}`
+    );
   }
   
   return `POLYGON((${coordPairs.join(', ')}))`;
