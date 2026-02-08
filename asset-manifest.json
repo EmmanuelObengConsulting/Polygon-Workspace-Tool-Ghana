@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/Polygon-Workspace-Tool-Ghana/static/css/main.9510d590.css",
-    "main.js": "/Polygon-Workspace-Tool-Ghana/static/js/main.d777d713.js",
+    "main.css": "/Polygon-Workspace-Tool-Ghana/static/css/main.ad1358d2.css",
+    "main.js": "/Polygon-Workspace-Tool-Ghana/static/js/main.f8640bdb.js",
     "static/js/213.5e1e5567.chunk.js": "/Polygon-Workspace-Tool-Ghana/static/js/213.5e1e5567.chunk.js",
     "static/js/732.86557898.chunk.js": "/Polygon-Workspace-Tool-Ghana/static/js/732.86557898.chunk.js",
     "index.html": "/Polygon-Workspace-Tool-Ghana/index.html",
-    "main.9510d590.css.map": "/Polygon-Workspace-Tool-Ghana/static/css/main.9510d590.css.map",
-    "main.d777d713.js.map": "/Polygon-Workspace-Tool-Ghana/static/js/main.d777d713.js.map",
+    "main.ad1358d2.css.map": "/Polygon-Workspace-Tool-Ghana/static/css/main.ad1358d2.css.map",
+    "main.f8640bdb.js.map": "/Polygon-Workspace-Tool-Ghana/static/js/main.f8640bdb.js.map",
     "213.5e1e5567.chunk.js.map": "/Polygon-Workspace-Tool-Ghana/static/js/213.5e1e5567.chunk.js.map",
     "732.86557898.chunk.js.map": "/Polygon-Workspace-Tool-Ghana/static/js/732.86557898.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.9510d590.css",
-    "static/js/main.d777d713.js"
+    "static/css/main.ad1358d2.css",
+    "static/js/main.f8640bdb.js"
   ]
 }
