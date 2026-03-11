@@ -3,7 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import JsBarcode from 'jsbarcode';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { FaEdit, FaEye, FaChartBar, FaDownload, FaHistory, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaEye, FaChartBar, FaDownload, FaHistory, FaTrash, FaPrint } from 'react-icons/fa';
 import {
   calculateMeanCoordinates,
   generateJobCode,
@@ -76,8 +76,7 @@ function App() {
     console.log('Generated jobCode:', newJobCode);
     setJobCode(newJobCode);
     setIsGenerated(true);
-    setActiveView('preview');
-    
+
     // Increment generation count and save to localStorage
     const newCount = generationCount + 1;
     setGenerationCount(newCount);
@@ -96,7 +95,7 @@ function App() {
 
   useEffect(() => {
     // Ensure barcode is rendered whenever preview is active (SVG may remount when switching views)
-    if (isGenerated && editableGA && activeView === 'preview' && leftBarcodeRef.current) {
+    if (isGenerated && editableGA && leftBarcodeRef.current) {
       JsBarcode(leftBarcodeRef.current, editableGA, {
         format: 'CODE128',
         width: 1.5,
@@ -111,13 +110,6 @@ function App() {
     if (!isGenerated) {
       console.warn('Export attempted before generation.');
       return;
-    }
-    
-    // Switch to preview view if not already there, then wait for render
-    if (activeView !== 'preview') {
-      setActiveView('preview');
-      // Wait for the preview to render
-      await new Promise(resolve => setTimeout(resolve, 100));
     }
     
     try {
@@ -408,6 +400,9 @@ function App() {
               <div className="button-group">
                 <button onClick={handleCalculateMean} className="btn-primary" disabled={polygonPoints.length === 0}>Calculate Mean</button>
                 <button onClick={handleGenerate} className="btn-primary" disabled={!meanCoordinates || !gapaNumber}>Generate Codes</button>
+                <button onClick={handleExportPDF} className="btn-primary" disabled={!isGenerated}>
+                  <FaPrint className="btn-icon" /> Print
+                </button>
                 <button onClick={handleReset} className="btn-secondary">Reset</button>
               </div>
 
@@ -422,11 +417,6 @@ function App() {
                 </div>
               )}
 
-              {isGenerated && (
-                <button onClick={handleExportPDF} className="btn-export">
-                  <FaDownload className="btn-icon" /> Download PDF
-                </button>
-              )}
             </div>
           </div>
         )}
@@ -440,6 +430,14 @@ function App() {
                 <span>Download PDF</span>
               </button>
             </div>
+          </div>
+        )}
+
+        {isGenerated && (activeView === 'input' || activeView === 'preview') && (
+          <div className="a4-preview-dock">
+            {activeView === 'input' && (
+              <h3 className="codes-preview-title">Generated Codes Preview</h3>
+            )}
             <div className="preview-container">
               <div className="a4-preview" ref={pdfContentRef}>
                 <div className="a4-left-group">
@@ -479,12 +477,13 @@ function App() {
                     )}
                   </div>
                 </div>
-
               </div>
             </div>
-            <button onClick={handleExportPDF} className="btn-export">
-              <FaDownload className="btn-icon" /> Download PDF
-            </button>
+            {activeView === 'preview' && (
+              <button onClick={handleExportPDF} className="btn-export">
+                <FaDownload className="btn-icon" /> Download PDF
+              </button>
+            )}
           </div>
         )}
 

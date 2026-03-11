@@ -458,6 +458,25 @@ button {
   transition: all 0.3s ease;
 }
 
+/* Generated codes preview dock (shared between input and preview views) */
+.a4-preview-dock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 2rem 2rem;
+  background: #000000;
+}
+
+/* Title above preview in input view */
+.codes-preview-title {
+  color: #e8e8e8;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
 .preview-view {
   display: flex;
   flex-direction: column;
